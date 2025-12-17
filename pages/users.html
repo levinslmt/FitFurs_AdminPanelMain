@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Users</title>
+  <link rel="stylesheet" href="../styles/sidebar.css">
+  <link rel="stylesheet" href="../styles/global.css">
+  <link rel="stylesheet" href="../styles/users.css">
+  <style>
+    /* Modal Styles */
+    .main {
+      margin-left: 280px;      /* SAME AS SIDEBAR WIDTH */
+      padding: 20px;
+      min-width: 0;
+    }
+
+    #editModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-content h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 24px;
+    }
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+      transition: color 0.2s;
+    }
+    .close-btn:hover {
+      color: #000;
+    }
+    #editForm label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #555;
+    }
+    #editForm input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    #editForm input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+    .modal-buttons {
+      margin-top: 25px;
+      text-align: right;
+    }
+    .modal-buttons button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: background-color 0.2s;
+    }
+    #cancelEdit {
+      background-color: #6c757d;
+      color: white;
+    }
+    #cancelEdit:hover {
+      background-color: #5a6268;
+    }
+    #editForm button[type="submit"] {
+      background-color: #007bff;
+      color: white;
+    }
+    #editForm button[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <side-bar></side-bar>
+
+    <!-- Main Content -->
+    <div class="main">
+      <section id="users">
+        <h1>Users</h1>
+
+        <!-- Controls -->
+        <div class="controls">
+          <input type="text" id="searchInput" placeholder="Search by username, email or phone...">
+        </div>
+
+        <!-- User Table -->
+        <table id="userTable">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Phone Number</th>
+              <th>Number of Pets Owned</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Users will be loaded from Firebase -->
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="editModal">
+    <div class="modal-content">
+      <button class="close-btn" id="closeModal">&times;</button>
+      <h2>Edit User</h2>
+      <form id="editForm">
+        <label for="editUsername">Username</label>
+        <input type="text" id="editUsername" required>
+        
+        <label for="editEmail">Email</label>
+        <input type="email" id="editEmail" required>
+        
+        <label for="editPhone">Phone Number</label>
+        <input type="text" id="editPhone" required>
+        
+        <label for="editPets">Number of Pets Owned</label>
+        <input type="number" id="editPets" min="0" required>
+        
+        <div class="modal-buttons">
+          <button type="button" id="cancelEdit">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "BOQout55yLWUT_u5i4RUnKn7YWjdEVomWAjCkXz3IvTaVVkeCdDEa1TNOlfwKp_9ywtk9N8_xWSesl1MeJQMJbI",
+      authDomain: "fitfurs12.firebaseapp.com",
+      projectId: "fitfurs12",
+      storageBucket: "fitfurs12.appspot.com",
+      messagingSenderId: "875211703765",
+      appId: "1:875211703765:android:b069bfa50ec424172c295c"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    /* ----------------------------------------------------------
+       ACTIVITY LOGGING FUNCTION
+    ----------------------------------------------------------*/
+    async function logActivity(type, description, userId = null, petId = null) {
+      try {
+        await db.collection("activities").add({
+          type: type,  // e.g., 'user_updated', 'user_deleted'
+          description: description,  // e.g., 'User JohnDoe updated their profile'
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          userId: userId,  // ID of the user
+          petId: petId    // Optional: Not used for users
+        });
+        console.log(`Activity logged: ${description}`);
+      } catch (error) {
+        console.error("Error logging activity:", error);
+      }
+    }
+
+    const tableBody = document.querySelector('#userTable tbody');
+    const searchInput = document.getElementById('searchInput');
+
+    // Load users from Firebase
+    function loadUsers() {
+      tableBody.innerHTML = '';
+      db.collection('users').get().then(snapshot => {
+        snapshot.forEach(doc => {
+          const user = doc.data();
+          const row = document.createElement('tr');
+          row.setAttribute('data-id', doc.id);
+
+          row.innerHTML = `
+            <td>${user.username || ''}</td>
+            <td>${user.email || ''}</td>
+            <td>${user.phone || ''}</td>
+            <td>${user.numberOfPets || 0}</td>
+            <td>
+              <button class="edit-btn">Edit</button>
+              <button class="delete-btn">Delete</button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+      });
+    }
+
+    loadUsers();
+
+    // Search functionality
+    searchInput.addEventListener('input', () => {
+      const searchValue = searchInput.value.toLowerCase();
+      for (let row of tableBody.rows) {
+        const username = row.cells[0].textContent.toLowerCase();
+        const email = row.cells[1].textContent.toLowerCase();
+        const phone = row.cells[2].textContent.toLowerCase();
+        row.style.display = (username.includes(searchValue) || email.includes(searchValue) || phone.includes(searchValue)) ? '' : 'none';
+      }
+    });
+
+    // Edit & Delete functionality
+    const editModal = document.getElementById('editModal');
+    const editForm = document.getElementById('editForm');
+    let currentRow;
+
+    tableBody.addEventListener('click', (e) => {
+      const row = e.target.closest('tr');
+      const docId = row.getAttribute('data-id');
+
+      if (e.target.classList.contains('edit-btn')) {
+        currentRow = row;
+        document.getElementById('editUsername').value = row.cells[0].textContent;
+        document.getElementById('editEmail').value = row.cells[1].textContent;
+        document.getElementById('editPhone').value = row.cells[2].textContent;
+        document.getElementById('editPets').value = row.cells[3].textContent;
+        editModal.style.display = 'flex';
+
+        editForm.onsubmit = async (ev) => {
+          ev.preventDefault();
+
+          // Existing update logic
+          await db.collection('users').doc(docId).update({
+            username: document.getElementById('editUsername').value,
+            email: document.getElementById('editEmail').value,
+            phone: document.getElementById('editPhone').value,
+            numberOfPets: Number(document.getElementById('editPets').value)
+          });
+
+          // NEW: Log the update activity
+          const username = document.getElementById('editUsername').value;
+          await logActivity(
+            'user_updated',
+            `User ${username} was updated`,
+            docId
+          );
+
+          editModal.style.display = 'none';
+          loadUsers();
+        };
+      }
+
+      if (e.target.classList.contains('delete-btn')) {
+        if (confirm('Are you sure you want to delete this user?')) {
+          // Existing delete logic
+          db.collection('users').doc(docId).delete().then(async () => {
+            // NEW: Log the delete activity
+            const username = row.cells[0].textContent;
+            await logActivity(
+              'user_deleted',
+              `User ${username} was deleted`,
+              docId
+            );
+
+            loadUsers();
+          });
+        }
+      }
+    });
+
+    document.getElementById('cancelEdit').addEventListener('click', () => {
+      editModal.style.display = 'none';
+    });
+
+    // Close modal on close button click
+    document.getElementById('closeModal').addEventListener('click', () => {
+      editModal.style.display = 'none';
+    });
+
+    // Close modal on outside click
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal) {
+        editModal.style.display = 'none';
+      }
+    });
+  </script>
+
+  <!-- Include your main.js if it renders sidebar -->
+  <script type="module" src="../main.js" defer></script>
+</body>
+</html>

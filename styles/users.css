@@ -1,0 +1,102 @@
+/* Main content styling */
+.main {
+  flex: 1;
+  margin-left: 0px;
+  padding: 40px 30px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Section heading */
+#users h1 {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  background-color: #fff;
+}
+
+/* Table header */
+table thead,
+table th {
+  background-color: #1c1c1c;
+  color: #fff;
+  font-weight: 600;
+  text-align: left;
+  padding: 14px 20px;
+}
+
+/* Table body */
+table td {
+  padding: 12px 20px;
+  border-bottom: 1px solid #eee;
+  color: #333;
+}
+
+/* Hover effect */
+table tr:hover {
+  background-color: #f0f0f0;
+  transition: 0.3s;
+}
+
+/* Action buttons */
+.edit-btn,
+.disable-btn,
+.delete-btn {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 14px;
+}
+
+.edit-btn {
+  background-color: #E63946;
+}
+
+.disable-btn {
+  background-color: #6c757d;
+}
+
+.delete-btn {
+  background-color: #aaa;
+}
+
+/* Search and filter controls */
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.controls input,
+.controls select {
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  table th,
+  table td {
+    padding: 10px 12px;
+  }
+}
