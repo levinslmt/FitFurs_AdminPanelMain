@@ -3,25 +3,152 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login</title>
-  <link rel="stylesheet" href="/mnt/data/auth.css">
+  <title>FitFurs - Admin Login</title>
+  <style>
+    /* Reset and base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #000000 0%, #333333 100%);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* Login card */
+    .login-card {
+      width: 400px;
+      padding: 40px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Header */
+    .header h1 {
+      font-size: 36px;
+      font-weight: bold;
+      color: #000000;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .header h1::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 3px;
+      background: #ff0000;
+      margin: 8px auto 0;
+    }
+    .header h2 {
+      font-size: 18px;
+      color: #666666;
+      margin-bottom: 30px;
+    }
+
+    /* Form */
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #cccccc;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #333333;
+      background: #f9f9f9;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .input-group input::placeholder {
+      color: #999999;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #ff0000;
+      box-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
+    }
+
+    /* Button */
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: #ff0000;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .login-btn:hover {
+      background: #cc0000;
+      transform: translateY(-2px);
+    }
+
+    /* Error message */
+    .error {
+      color: #ff0000;
+      font-size: 14px;
+      margin-top: 15px;
+      min-height: 20px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .login-card {
+        width: 90%;
+        padding: 30px;
+      }
+      .header h1 {
+        font-size: 28px;
+      }
+      .header h2 {
+        font-size: 16px;
+      }
+    }
+  </style>
 </head>
-
 <body>
-  <div class="main" style="display:flex; justify-content:center; align-items:center; height:100vh; background:#f0f2f5;">
-    <section style="width:400px; padding:30px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); background:#fff; text-align:center;">
-      <h2 style="margin-bottom:20px; font-size:26px; color:#222;">Admin Login</h2>
-
-      <form id="loginForm" style="display:flex; flex-direction:column; gap:15px;">
-        <input type="email" id="loginEmail" placeholder="Email" required style="padding:12px; border:1px solid #ccc; border-radius:8px;">
-        <input type="password" id="loginPassword" placeholder="Password" required style="padding:12px; border:1px solid #ccc; border-radius:8px;">
-        <button type="submit" style="padding:12px; border:none; border-radius:8px; background:#6c757d; color:#fff; cursor:pointer; font-weight:600;">
-          Login
-        </button>
-      </form>
-
-      <p id="loginError" class="error" style="color:red; margin-top:10px;"></p>
-    </section>
+  <div class="login-card">
+    <div class="header">
+      <h1>FitFurs</h1>
+      <h2>Administrator Login</h2>
+    </div>
+    <form id="loginForm" class="login-form">
+      <div class="input-group">
+        <input type="email" id="loginEmail" placeholder="Email" required>
+      </div>
+      <div class="input-group">
+        <input type="password" id="loginPassword" placeholder="Password" required>
+      </div>
+      <button type="submit" class="login-btn">Login</button>
+    </form>
+    <p id="loginError" class="error"></p>
   </div>
 
   <!-- Firebase -->
@@ -44,19 +171,18 @@
     const auth = firebase.auth();
 
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
-  try {
-    await auth.signInWithEmailAndPassword(email, password);
-    console.log("Login successful, redirecting to dashboard...");
-    window.location.href = "pages/dashboard.html";  // relative to index.html location
-  } catch (err) {
-    console.error("Login error:", err);
-    document.getElementById("loginError").textContent = err.message;
-  }
-});
-
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        console.log("Login successful, redirecting to dashboard...");
+        window.location.href = "pages/dashboard.html";  // relative to index.html location
+      } catch (err) {
+        console.error("Login error:", err);
+        document.getElementById("loginError").textContent = err.message;
+      }
+    });
   </script>
 </body>
 </html>
